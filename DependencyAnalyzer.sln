@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyAnalysis", "DependencyAnalysis\DependencyAnalysis.csproj", "{CE990113-4993-4088-85F5-D6E8DAEB7F76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyAnalyzerCLI", "DependencyAnalyzerCLI\DependencyAnalyzerCLI.csproj", "{E0E8D8AF-4486-4460-B76F-12682B7FAF7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{0061EBEF-1338-4627-9E0E-DD1647BB450F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CLI", "CLI", "{4129FE86-8140-4736-9B0A-B19037FAA23A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{38C54A37-D0E2-4634-8898-E2932CA8A19D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyAnalyzerCLI.Tests", "DependencyAnalyzerCLI.Tests\DependencyAnalyzerCLI.Tests.csproj", "{05A5AF23-8E89-4289-AF74-7FA9D7A29C02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyAnalysis.Tests", "DependencyAnalysis.Tests\DependencyAnalysis.Tests.csproj", "{84E84B34-2F89-4CC8-B25F-2009B8C0DCED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE990113-4993-4088-85F5-D6E8DAEB7F76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE990113-4993-4088-85F5-D6E8DAEB7F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE990113-4993-4088-85F5-D6E8DAEB7F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE990113-4993-4088-85F5-D6E8DAEB7F76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0E8D8AF-4486-4460-B76F-12682B7FAF7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0E8D8AF-4486-4460-B76F-12682B7FAF7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0E8D8AF-4486-4460-B76F-12682B7FAF7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0E8D8AF-4486-4460-B76F-12682B7FAF7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A5AF23-8E89-4289-AF74-7FA9D7A29C02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A5AF23-8E89-4289-AF74-7FA9D7A29C02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A5AF23-8E89-4289-AF74-7FA9D7A29C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A5AF23-8E89-4289-AF74-7FA9D7A29C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84E84B34-2F89-4CC8-B25F-2009B8C0DCED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84E84B34-2F89-4CC8-B25F-2009B8C0DCED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84E84B34-2F89-4CC8-B25F-2009B8C0DCED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84E84B34-2F89-4CC8-B25F-2009B8C0DCED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B50962F4-89AA-4611-B01B-315983CD4851}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CE990113-4993-4088-85F5-D6E8DAEB7F76} = {0061EBEF-1338-4627-9E0E-DD1647BB450F}
+		{E0E8D8AF-4486-4460-B76F-12682B7FAF7B} = {4129FE86-8140-4736-9B0A-B19037FAA23A}
+		{05A5AF23-8E89-4289-AF74-7FA9D7A29C02} = {38C54A37-D0E2-4634-8898-E2932CA8A19D}
+		{84E84B34-2F89-4CC8-B25F-2009B8C0DCED} = {38C54A37-D0E2-4634-8898-E2932CA8A19D}
+	EndGlobalSection
+EndGlobal
