@@ -1,4 +1,4 @@
-namespace DependencyAnalysis.TypeAnalysis;
+namespace DependencyAnalysis.Utils;
 
 public interface ITypeVisibilityHelper
 {

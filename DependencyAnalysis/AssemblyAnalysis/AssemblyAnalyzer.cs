@@ -1,6 +1,7 @@
 using System.Reflection;
 using DependencyAnalysis.DataStructures.Tree;
 using DependencyAnalysis.Infrastructure;
+using DependencyAnalysis.Utils;
 
 namespace DependencyAnalysis.AssemblyAnalysis;
 
@@ -75,7 +76,7 @@ public class AssemblyAnalyzer : IAssemblyAnalyzer
         var refAssemblies = curNode.AssemblyObj.GetReferencedAssemblies();
         foreach (var refAssemblyName in refAssemblies)
         {
-            if (!includeSystem && refAssemblyName.Name.IsSystemAssemblyName())
+            if (!includeSystem && ReflectionHelper.IsSystemAssemblyName(refAssemblyName.Name))
             {
                 continue;
             }
@@ -88,7 +89,8 @@ public class AssemblyAnalyzer : IAssemblyAnalyzer
                 tree.AddNode(newNode, curNode);
                 
                 //Recurse if under max depth, and if system constraint eligible
-                if (curDepth < maxDepth && (recurseSystem || !refAssemblyName.Name.IsSystemAssemblyName()))
+                if (curDepth < maxDepth 
+                    && (recurseSystem || !ReflectionHelper.IsSystemAssemblyName(refAssemblyName.Name)))
                 {
                     BuildDependencyTree(tree, newNode, curDepth+1, maxDepth, includeSystem, recurseSystem);
                 }

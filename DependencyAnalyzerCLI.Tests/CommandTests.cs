@@ -1,5 +1,6 @@
 using DependencyAnalysis.AssemblyAnalysis;
 using DependencyAnalysis.TypeAnalysis;
+using DependencyAnalysis.Utils;
 using DependencyAnalyzerCLI.Commands;
 
 namespace DependencyAnalyzerCLI.Tests;
@@ -71,6 +72,19 @@ public class CommandTests
             {
                 AssemblyName = "ChannelAdvisor.Inventory.API.Implementation",
                 TypeName = "ChannelAdvisor.Inventory.API.Implementation.BulkInventoryExtractorV4"
+            });
+    }
+    
+    [Test]
+    public void TestListDependenciesOfTypeAssembliesOnlyCommand()
+    {
+        var cmd = new ListDependenciesOfTypeCommand(new TypeAnalyzer("C:\\dev\\complete\\bin"));
+        cmd.Execute(null,
+            new()
+            {
+                AssemblyName = "ChannelAdvisor.Inventory.API.Implementation",
+                TypeName = "ChannelAdvisor.Inventory.API.Implementation.BulkInventoryExtractorV4",
+                AssembliesOnly = true
             });
     }
 

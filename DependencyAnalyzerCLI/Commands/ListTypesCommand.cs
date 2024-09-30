@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using DependencyAnalysis.AssemblyAnalysis;
 using DependencyAnalysis.TypeAnalysis;
+using DependencyAnalysis.Utils;
 using DependencyAnalyzerCLI.Util;
 using Spectre.Console;
 using Spectre.Console.Cli;

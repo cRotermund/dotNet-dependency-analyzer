@@ -3,6 +3,7 @@ using DependencyAnalysis.AssemblyAnalysis;
 using DependencyAnalysis.DataStructures.Graph;
 using DependencyAnalysis.DataStructures.Tree;
 using DependencyAnalysis.Infrastructure;
+using DependencyAnalysis.Utils;
 
 namespace DependencyAnalysis.TypeAnalysis
 {
@@ -35,7 +36,7 @@ namespace DependencyAnalysis.TypeAnalysis
         {   
             var assembly = _loader.Load(new AssemblyName(assemblyName));
 
-            var targetType = GetTypeFromAssembly(assembly, typeName);
+            var targetType = ReflectionHelper.GetTypeFromAssembly(assembly, typeName);
             if (targetType == null)
             {
                 throw new ArgumentException(
@@ -64,61 +65,35 @@ namespace DependencyAnalysis.TypeAnalysis
             HashSet<Type> dependencies = new();
             
             //Scan for generic types on class
-            foreach (Type x in GetClassGenericTypesArgs(t))
-            {
-                foreach (Type y in ExplodeGenericTypeDependencies(x))
-                {
-                    if (includeSystemTypes || !y.Assembly.IsSystemAssembly())
-                    {
-                        dependencies.Add(y);
-                    }
-                }
-            }
-
+            HashSetHelper.SetAddRange(dependencies, ReflectionHelper.GetClassGenericTypeArgs(t));
+            
             //Scan for inheritance types
-            foreach (Type x in GetInheritanceChainTypes(t))
-            {
-                foreach (Type y in ExplodeGenericTypeDependencies(x))
-                {
-                    if (includeSystemTypes || !y.Assembly.IsSystemAssembly())
-                    {
-                        dependencies.Add(y);
-                    }
-                }
-            }
+            HashSetHelper.SetAddRange(dependencies, ReflectionHelper.GetInheritanceChainTypes(t));
             
             //Scan method signatures and bodies (params and return and local variables)
-            foreach (Type x in GetMethodSignatureTypes(t))
-            {
-                foreach (Type y in ExplodeGenericTypeDependencies(x))
-                {
-                    if (includeSystemTypes || !y.Assembly.IsSystemAssembly())
-                    {
-                        dependencies.Add(y);
-                    }
-                }
-            }
-            
+            HashSetHelper.SetAddRange(dependencies, ReflectionHelper.GetMethodTypes(t));
+
             //Scan properties
-            foreach (Type x in GetPropertyTypes(t))
-            {
-                foreach (Type y in ExplodeGenericTypeDependencies(x))
-                {
-                    if (includeSystemTypes || !y.Assembly.IsSystemAssembly())
-                    {
-                        dependencies.Add(y);
-                    }
-                }
-            }
+            HashSetHelper.SetAddRange(dependencies, ReflectionHelper.GetPropertyTypes(t));
             
-            //Add the collection of dependencies to the graph, and then recurse, walking into each if necessary
+            //For each dependency detected, explode it appropriately if generic
+            //Add the necessary dependencies to our graph, eliminating duplicates and determining if recursion is
+            //necessary
+            
             List<Type> recurseList = new();
             foreach (var dep in dependencies)
             {
-                //If the graph add comes back false, we've already traced this dep.
-                if (!graph.AddDependency(dep, t))
+                var explodedDeps = ReflectionHelper.ExplodeTypeIfGeneric(dep);
+
+                foreach (var exploded in explodedDeps)
                 {
-                    recurseList.Add(dep);
+                    if (includeSystemTypes || !ReflectionHelper.IsSystemType(exploded))
+                    {
+                        if (!graph.AddDependency(exploded, t))
+                        {
+                            recurseList.Add(exploded);
+                        }
+                    }
                 }
             }
 
@@ -197,186 +172,6 @@ namespace DependencyAnalysis.TypeAnalysis
             }
 
             return tree;
-        }
-
-        private HashSet<Type> GetClassGenericTypesArgs(Type t)
-        {
-            var hs = new HashSet<Type>();
-            
-            foreach (var gt in t.GetGenericArguments())
-            {
-                //A generic type parameter is useful in that it might have constraints - which need to be recorded,
-                //Otherwise, it can be discarded.
-                if (gt.IsGenericTypeParameter)
-                {
-                    foreach (var constraint in gt.GetGenericParameterConstraints())
-                    {
-                        hs.Add(constraint);
-                    }
-                    
-                    continue;
-                }
-                
-                hs.Add(gt);
-            }
-
-            return hs;
-        }
-
-        private HashSet<Type> GetInheritanceChainTypes(Type t)
-        {
-            var hs = new HashSet<Type>();
-
-            Type? curType = t.BaseType;
-            
-            while (curType != null)
-            {
-                hs.Add(curType);
-                curType = curType.BaseType;
-            }
-
-            return hs;
-        }
-
-        private HashSet<Type> GetMethodSignatureTypes(Type t)
-        {
-            var hs = new HashSet<Type>();
-            
-            //Given that we will later recurse, only look at this level of the inheritance chain.
-            var mList = t.GetMethods(
-                BindingFlags.DeclaredOnly 
-                | BindingFlags.Instance
-                | BindingFlags.NonPublic
-                | BindingFlags.Public
-                | BindingFlags.Static);
-
-            foreach (var mInfo in mList)
-            {
-                //Add the return type
-                if (!mInfo.ReturnType.IsGenericParameter && !mInfo.ReturnType.IsGenericMethodParameter)
-                {
-                    hs.Add(mInfo.ReturnType);
-                }
-
-                //Add each of the parameter types (may include generics...)
-                foreach (var paramInfo in mInfo.GetParameters())
-                {
-                    var pType = paramInfo.ParameterType;
-                    
-                    //Ignore anything that is a generic parameter
-                    if (pType.IsGenericParameter || pType.IsGenericMethodParameter)
-                    {
-                        continue;
-                    }
-                    
-                    hs.Add(pType);
-                }
-
-                //Add each of the generic type parameters
-                foreach (var gt in mInfo.GetGenericArguments())
-                {
-                    //The constraint is a dependency
-                    foreach (var constraint in gt.GetGenericParameterConstraints())
-                    {
-                        hs.Add(constraint);
-                    }
-                    
-                    //We only need to trace down the actual type of the parameter if it has been constructed, or defined.
-                    if (gt.IsConstructedGenericType)
-                    {
-                        hs.Add(gt);
-                    }
-                }
-
-                //Grab the method bodies, and add all local variable types
-                MethodBody? body = mInfo.GetMethodBody();
-                if (body != null)
-                {
-                    foreach (var lv in body.LocalVariables)
-                    {
-                        //Again... skip generic params
-                        if (lv.LocalType.IsGenericParameter || lv.LocalType.IsGenericMethodParameter)
-                        {
-                            continue;
-                        }
-                        
-                        hs.Add(lv.LocalType);
-                    }
-                }
-            }
-            
-            return hs; 
-        }
-        
-        private HashSet<Type> GetPropertyTypes(Type t)
-        {
-            var hs = new HashSet<Type>();
-
-            var pList = t.GetProperties(
-                BindingFlags.DeclaredOnly
-                | BindingFlags.Instance
-                | BindingFlags.NonPublic
-                | BindingFlags.Public
-                | BindingFlags.Static);
-
-            foreach (var pInfo in pList)
-            {
-                hs.Add(pInfo.PropertyType);
-            }
-            
-            return hs;
-        }
-
-        private Type? GetTypeFromAssembly(Assembly assy, string typeName)
-        {
-            var types = assy.GetTypes();
-            
-            foreach (var t in types)
-            {
-                if (string.Equals(t.FullName, typeName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return t;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// When a type is processed for dependency tracing, we need to properly account for generics.
-        ///
-        /// Concrete definitions for generic type parameters are dependencies which need to be traced, but when
-        /// tracing into the generic type itself, we must only observe the GenericTypeDefinition, not the type
-        /// instance.
-        ///
-        /// Exploring the type instance will result in invalid circular references back to the declaring type.
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        private List<Type> ExplodeGenericTypeDependencies(Type t)
-        {
-            List<Type> typeList = new();
-            
-            //Nothing special needed if not generic, just return the type
-            if (!t.IsGenericType)
-            {
-                typeList.Add(t);
-                return typeList;
-            }
-
-            //Ensure that each type argument is handled, recursing into this function for the same handling
-            foreach (var gt in t.GetGenericArguments())
-            {
-                if (!gt.IsGenericParameter && !gt.IsGenericMethodParameter)
-                {
-                    typeList.AddRange(ExplodeGenericTypeDependencies(gt));   
-                }
-            }
-            
-            //Add the type definition itself.
-            typeList.Add(t.GetGenericTypeDefinition());
-
-            return typeList;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DependencyAnalysis.AssemblyAnalysis;
 using DependencyAnalysis.TypeAnalysis;
+using DependencyAnalysis.Utils;
 using DependencyAnalyzerCLI.Commands;
 using DependencyAnalyzerCLI.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
